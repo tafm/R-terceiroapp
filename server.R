@@ -1,4 +1,6 @@
 dados <- data.frame(read.csv2("baseGeral.csv",  fileEncoding="UTF-8",  header = TRUE, sep = ";", dec = ","))
+tamcol1 <- 8
+tamcol2 <- (12 - tamcol1)
 
 shinyServer(function(input, output) {
   
@@ -30,5 +32,19 @@ shinyServer(function(input, output) {
     }
     
     selectInput("selectdisciplina", "Disciplina:", opcoesdisciplina, selected = NULL)
+  })
+  
+  #Box de desempenho satisfatório
+  output$UIboxsatisfatorio <- renderInfoBox({
+    infoBox(
+      "Satisfatório", "80%", icon = icon("thumbs-up", lib = "glyphicon"), color = "green"
+    )
+  })
+  
+  #Box de desempenho satisfatório
+  output$UIboxinsatisfatorio <- renderInfoBox({
+    infoBox(
+      "Insatisfatório", "20%", icon = icon("thumbs-down", lib = "glyphicon"), color = "red"
+    )
   })
 })
