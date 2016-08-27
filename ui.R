@@ -11,7 +11,17 @@ ui <- dashboardPage(
       #  menuSubItem(icon = NULL, tabName="dashboard", uiOutput("selectcurso"))
       #)
     #)
-    uiOutput("selectcurso")
+    uiOutput("UIselectcurso"),
+
+    conditionalPanel(
+      condition = "input.selectcurso != ''",
+      uiOutput("UIselectperiodo")
+    ),
+    
+    conditionalPanel(
+      condition = "input.selectperiodo != ''",
+      uiOutput("UIselectdisciplina")
+    )
   ),
   
   dashboardBody(fluidRow(
