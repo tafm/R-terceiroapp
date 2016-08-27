@@ -36,15 +36,30 @@ shinyServer(function(input, output) {
   
   #Box de desempenho satisfatório
   output$UIboxsatisfatorio <- renderInfoBox({
+    if(!is.null(input$selectcurso) && input$selectcurso != "" && !is.null(input$selectperiodo) && input$selectperiodo != "" && !is.null(input$selectdisciplina) && input$selectdisciplina != "") {
+      selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
+      selecaosat <- filter(selecaogeral, DESEMPENHO_BINARIO == 1)
+      desempenho <- paste(round((nrow(selecaosat) / nrow(selecaogeral)) * 100, digits = 1), "%", sep = "")
+    } else {
+      desempenho <- "?"
+    }
+    
     infoBox(
-      "Satisfatório", "80%", icon = icon("thumbs-up", lib = "glyphicon"), color = "green"
+      "Satisfatório", desempenho, icon = icon("thumbs-up", lib = "glyphicon"), color = "green"
     )
   })
   
   #Box de desempenho satisfatório
   output$UIboxinsatisfatorio <- renderInfoBox({
+    if(!is.null(input$selectcurso) && input$selectcurso != "" && !is.null(input$selectperiodo) && input$selectperiodo != "" && !is.null(input$selectdisciplina) && input$selectdisciplina != "") {
+      selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
+      selecaonsat <- filter(selecaogeral, DESEMPENHO_BINARIO == 0)
+      desempenho <- paste(round((nrow(selecaonsat) / nrow(selecaogeral)) * 100, digits = 1), "%", sep = "")
+    } else {
+      desempenho <- "?"
+    }
     infoBox(
-      "Insatisfatório", "20%", icon = icon("thumbs-down", lib = "glyphicon"), color = "red"
+      "Insatisfatório", desempenho, icon = icon("thumbs-down", lib = "glyphicon"), color = "red"
     )
   })
 })
