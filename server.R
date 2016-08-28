@@ -1,6 +1,4 @@
 dados <- data.frame(read.csv2("baseGeral.csv",  fileEncoding="UTF-8",  header = TRUE, sep = ";", dec = ","))
-tamcol1 <- 8
-tamcol2 <- (12 - tamcol1)
 
 shinyServer(function(input, output) {
   
@@ -62,4 +60,16 @@ shinyServer(function(input, output) {
       "Insatisfatório", desempenho, icon = icon("thumbs-down", lib = "glyphicon"), color = "red"
     )
   })
+  
+  #Tabela de alunos
+  output$tabalunos <- renderDataTable({
+    selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
+    alunos <- select(selecaogeral, Nome.do.Aluno, DESEMPENHO, DESEMPENHO_BINARIO)
+    alunos <- alunos[order(alunos$Nome.do.Aluno),]
+    alunos
+  },  options = list(paging = FALSE, searching = FALSE, scrollX = TRUE),
+      #selection = 'single'
+      selection = 'none'
+  )
+  
 })
