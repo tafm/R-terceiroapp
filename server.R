@@ -1,4 +1,27 @@
 dados <- data.frame(read.csv2("baseGeral.csv",  fileEncoding="UTF-8",  header = TRUE, sep = ";", dec = ","))
+xlsxsheet1 <- read.xlsx("DicionarioDados.xlsx", 1, encoding = "UTF-8")
+xlsxsheet2 <- read.xlsx("DicionarioDados.xlsx", 2, encoding = "UTF-8")
+
+#Concatenação de sheets 1 e 2 do arquivo
+
+variaveis <- data.frame(
+  "col1" = c(
+    as.character(xlsxsheet1$Variável),
+    as.character(xlsxsheet2$Variável)
+  ),
+  "col2" = c(
+    as.character(xlsxsheet1$Descrição.sobre.as.variáveis),
+    as.character(xlsxsheet2$Descrição.sobre.as.variáveis)
+  ),
+  "col3" = c(
+    as.character(xlsxsheet1$Construto),
+    as.character(xlsxsheet2$Categoria)
+  )
+)
+
+linhatabToVar <- function(linhaselecionada) {
+  return(as.character(variaveis[1,linhaselecionada]))
+}
 
 shinyServer(function(input, output) {
   
@@ -61,15 +84,30 @@ shinyServer(function(input, output) {
     )
   })
   
+  #Tabela de variáveis
+  
+  output$tabvariaveis <- renderDataTable({
+    variaveisUI <- select(variaveis, col1, col2)
+    colnames(variaveisUI) <- c("Id", "Descrição")
+    variaveisUI
+  },  rownames = FALSE,
+      options = list(paging = FALSE, searching = FALSE, scrollX = TRUE, scrollY = "400px"),
+      selection = 'single'
+  )
+  
   #Tabela de alunos
   output$tabalunos <- renderDataTable({
     selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
-    alunos <- select(selecaogeral, Nome.do.Aluno, DESEMPENHO, DESEMPENHO_BINARIO)
+    alunos <- select(selecaogeral, Nome.do.Aluno, DESEMPENHO_BINARIO)
+    alunos$DESEMPENHO_BINARIO <- as.character(alunos$DESEMPENHO_BINARIO)
+    alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "1"] <- "Sat."
+    alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "0"] <- "Insat."
     alunos <- alunos[order(alunos$Nome.do.Aluno),]
+    colnames(alunos) <- c("Aluno", "Desempenho")
     alunos
-  },  options = list(paging = FALSE, searching = FALSE, scrollX = TRUE),
+  },  rownames = FALSE,
+      options = list(paging = FALSE, searching = FALSE, scrollX = TRUE, scrollY = "400px"),
       #selection = 'single'
       selection = 'none'
   )
-  
 })

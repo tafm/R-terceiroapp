@@ -2,6 +2,7 @@ library(shiny)
 library(shinydashboard)
 library(dplyr)
 library(DT)
+library(xlsx)
 
 tamcol1 <- 8
 tamcol2 <- (12 - tamcol1)
@@ -32,7 +33,7 @@ ui <- dashboardPage(
         box(h3("teste"), title = "Representação gráfica:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = FALSE)
       ),
       column(width = tamcol2, 
-        box(h3("teste"), title = "Variáveis:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = FALSE),
+        box(dataTableOutput("tabvariaveis"), title = "Variáveis:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = FALSE),
         box(dataTableOutput("tabalunos"), title = "Alunos:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = TRUE)
       )
     )
