@@ -20,7 +20,7 @@ variaveis <- data.frame(
 )
 
 linhatabToVar <- function(linhaselecionada) {
-  return(as.character(variaveis[1,linhaselecionada]))
+  return(as.character(variaveis[linhaselecionada,1]))
 }
 
 shinyServer(function(input, output) {
@@ -59,7 +59,7 @@ shinyServer(function(input, output) {
   output$UIboxsatisfatorio <- renderInfoBox({
     if(!is.null(input$selectcurso) && input$selectcurso != "" && !is.null(input$selectperiodo) && input$selectperiodo != "" && !is.null(input$selectdisciplina) && input$selectdisciplina != "") {
       selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
-      selecaosat <- filter(selecaogeral, DESEMPENHO_BINARIO == 1)
+      selecaosat <- filter(selecaogeral, DESEMPENHO_BINARIO == 0)
       desempenho <- paste(round((nrow(selecaosat) / nrow(selecaogeral)) * 100, digits = 1), "%", sep = "")
     } else {
       desempenho <- "?"
@@ -74,7 +74,7 @@ shinyServer(function(input, output) {
   output$UIboxinsatisfatorio <- renderInfoBox({
     if(!is.null(input$selectcurso) && input$selectcurso != "" && !is.null(input$selectperiodo) && input$selectperiodo != "" && !is.null(input$selectdisciplina) && input$selectdisciplina != "") {
       selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
-      selecaonsat <- filter(selecaogeral, DESEMPENHO_BINARIO == 0)
+      selecaonsat <- filter(selecaogeral, DESEMPENHO_BINARIO == 1)
       desempenho <- paste(round((nrow(selecaonsat) / nrow(selecaogeral)) * 100, digits = 1), "%", sep = "")
     } else {
       desempenho <- "?"
@@ -86,12 +86,12 @@ shinyServer(function(input, output) {
   
   #Tabela de variáveis
   
-  output$tabvariaveis <- renderDataTable({
+  output$tabvariaveis <- renderDataTable({#print(input$tabvariaveis_rows_selected)
     variaveisUI <- select(variaveis, col1, col2)
     colnames(variaveisUI) <- c("Id", "Descrição")
     variaveisUI
   },  rownames = FALSE,
-      options = list(paging = FALSE, searching = FALSE, scrollX = TRUE, scrollY = "400px"),
+      options = list(paging = FALSE, searching = FALSE, scrollX = TRUE, scrollY = "400px", bInfo = FALSE, bAutoWidth = FALSE),
       selection = 'single'
   )
   
@@ -100,14 +100,33 @@ shinyServer(function(input, output) {
     selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
     alunos <- select(selecaogeral, Nome.do.Aluno, DESEMPENHO_BINARIO)
     alunos$DESEMPENHO_BINARIO <- as.character(alunos$DESEMPENHO_BINARIO)
-    alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "1"] <- "Sat."
-    alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "0"] <- "Insat."
+    alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "0"] <- "Satistatório"
+    alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "1"] <- "Insatisfatório"
     alunos <- alunos[order(alunos$Nome.do.Aluno),]
     colnames(alunos) <- c("Aluno", "Desempenho")
     alunos
-  },  rownames = FALSE,
-      options = list(paging = FALSE, searching = FALSE, scrollX = TRUE, scrollY = "400px"),
-      #selection = 'single'
-      selection = 'none'
+    },  rownames = FALSE,
+        options = list(paging = FALSE, searching = FALSE, scrollX = TRUE, scrollY = "400px", bInfo = FALSE),
+        #selection = 'single'
+        selection = 'none'
   )
+  
+  #Gráfico
+  output$grafico <- renderPlotly({
+    if(!is.null(input$selectcurso) && input$selectcurso != "" && !is.null(input$selectperiodo) && input$selectperiodo != "" && !is.null(input$selectdisciplina) && input$selectdisciplina != "") {
+      selecaoalunos <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
+      var <- linhatabToVar(input$tabvariaveis_rows_selected)
+      colunas <- c("Nome.do.Aluno","DESEMPENHO_BINARIO", var)
+      print(var)
+      ncol <- match(colunas,names(selecaoalunos))
+      alunos <- select(selecaoalunos, ncol)
+      alunos <- alunos[order(alunos[var]),]
+      alunos["r"] <- c(1:nrow(alunos))
+      colnames(alunos) <- c("Nome", "Desempenho", "Variavel", "Rank")
+      alunos$Desempenho[alunos$Desempenho == "0"] <- "Satisfatório"
+      alunos$Desempenho[alunos$Desempenho == "1"] <- "Insatisfatório"
+      print(head(alunos))
+      plot_ly(data = alunos, x = Rank, y = Variavel, mode = "markers", color = Variavel, text = paste(paste("Nome:", Nome), paste("Frequência:", Variavel), paste("Desempenho:", Desempenho), sep = "<br>"))
+    }
+  })
 })

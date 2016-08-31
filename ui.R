@@ -3,6 +3,7 @@ library(shinydashboard)
 library(dplyr)
 library(DT)
 library(xlsx)
+library(plotly)
 
 tamcol1 <- 8
 tamcol2 <- (12 - tamcol1)
@@ -22,7 +23,7 @@ ui <- dashboardPage(
   ),
   
   dashboardBody(fluidRow(
-    conditionalPanel( cond = "input.selecturso != ''", 
+    conditionalPanel( cond = "input.selectdisciplina != ''", 
       column(width = tamcol1, 
         fluidRow(
           infoBoxOutput("UIboxsatisfatorio"),
@@ -30,12 +31,22 @@ ui <- dashboardPage(
           infoBoxOutput("UIboxinsatisfatorio"),
           tags$style("#UIboxinsatisfatorio {width:50%;}")
         ),
-        box(h3("teste"), title = "Representação gráfica:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = FALSE)
+        box(
+          conditionalPanel(cond = "input.tabvariaveis_rows_selected == 0",
+            h5("Selecione uma variável")
+          ),
+          conditionalPanel(cond = "input.tabvariaveis_rows_selected != 0",
+            plotlyOutput('grafico')
+          )
+          , title = "Representação gráfica:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = FALSE)
       ),
       column(width = tamcol2, 
         box(dataTableOutput("tabvariaveis"), title = "Variáveis:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = FALSE),
         box(dataTableOutput("tabalunos"), title = "Alunos:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = TRUE)
       )
+    ),
+    conditionalPanel( cond = "input.selectdisciplina == ''",
+      HTML("Por favor, selecione o curso, o período e a disciplina no menu à esquerda")
     )
   ))
 )
