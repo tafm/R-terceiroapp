@@ -46,7 +46,7 @@ ui <- dashboardPage(
       )
     ),
     conditionalPanel( cond = "input.selectdisciplina == ''",
-      HTML("Por favor, selecione o curso, o período e a disciplina no menu à esquerda")
+      HTML("Selecione o curso, o período e a disciplina no menu à esquerda")
     )
   ))
 )

@@ -92,18 +92,25 @@ shinyServer(function(input, output) {
     variaveisUI
   },  rownames = FALSE,
       options = list(paging = FALSE, searching = FALSE, scrollX = TRUE, scrollY = "400px", bInfo = FALSE, bAutoWidth = FALSE),
-      selection = 'single'
+      selection = list(target = 'row', mode = 'single', selected = c(1))
   )
   
   #Tabela de alunos
   output$tabalunos <- renderDataTable({
-    selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
-    alunos <- select(selecaogeral, Nome.do.Aluno, DESEMPENHO_BINARIO)
-    alunos$DESEMPENHO_BINARIO <- as.character(alunos$DESEMPENHO_BINARIO)
-    alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "0"] <- "Satistatório"
-    alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "1"] <- "Insatisfatório"
-    alunos <- alunos[order(alunos$Nome.do.Aluno),]
-    colnames(alunos) <- c("Aluno", "Desempenho")
+    if(!is.null(input$tabvariaveis_rows_selected) && input$tabvariaveis_rows_selected != 0) {
+      selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
+      var <- linhatabToVar(input$tabvariaveis_rows_selected)
+      colunas <- c("Nome.do.Aluno", var, "DESEMPENHO_BINARIO")
+      ncol <- match(colunas,names(selecaogeral))
+      alunos <- select(selecaogeral, ncol)
+      alunos$DESEMPENHO_BINARIO <- as.character(alunos$DESEMPENHO_BINARIO)
+      alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "0"] <- "Satistatório"
+      alunos$DESEMPENHO_BINARIO[alunos$DESEMPENHO_BINARIO == "1"] <- "Insatisfatório"
+      alunos <- alunos[order(alunos$Nome.do.Aluno),]
+      colnames(alunos) <- c("Aluno", "Frequência", "Desempenho")
+    } else {print('teste')
+      alunos <- NULL
+    }
     alunos
     },  rownames = FALSE,
         options = list(paging = FALSE, searching = FALSE, scrollX = TRUE, scrollY = "400px", bInfo = FALSE),
@@ -117,7 +124,6 @@ shinyServer(function(input, output) {
       selecaoalunos <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
       var <- linhatabToVar(input$tabvariaveis_rows_selected)
       colunas <- c("Nome.do.Aluno","DESEMPENHO_BINARIO", var)
-      print(var)
       ncol <- match(colunas,names(selecaoalunos))
       alunos <- select(selecaoalunos, ncol)
       alunos <- alunos[order(alunos[var]),]
@@ -125,7 +131,6 @@ shinyServer(function(input, output) {
       colnames(alunos) <- c("Nome", "Desempenho", "Variavel", "Rank")
       alunos$Desempenho[alunos$Desempenho == "0"] <- "Satisfatório"
       alunos$Desempenho[alunos$Desempenho == "1"] <- "Insatisfatório"
-      print(head(alunos))
       plot_ly(data = alunos, x = Rank, y = Variavel, mode = "markers", color = Variavel, text = paste(paste("Nome:", Nome), paste("Frequência:", Variavel), paste("Desempenho:", Desempenho), sep = "<br>"))
     }
   })
