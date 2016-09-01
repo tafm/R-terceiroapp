@@ -96,7 +96,17 @@ shinyServer(function(input, output) {
   )
   
   #Tabela de alunos
+  #linhaselec <- 0
   output$tabalunos <- renderDataTable({
+    #@@-Trata linha selecionada
+    #d <- event_data("plotly_hover")
+    #if(!is.null(d)) {
+    #  linhaselec <- d$key
+    #} else {
+    #  linhaselec <- 0
+    #}
+    #@@
+    
     if(!is.null(input$tabvariaveis_rows_selected) && input$tabvariaveis_rows_selected != 0) {
       selecaogeral <- filter(dados, Curso == input$selectcurso, Período == input$selectperiodo, Nome.da.Disciplina == input$selectdisciplina)
       var <- linhatabToVar(input$tabvariaveis_rows_selected)
@@ -113,10 +123,24 @@ shinyServer(function(input, output) {
     }
     alunos
     },  rownames = FALSE,
+        server = FALSE,
         options = list(paging = FALSE, searching = FALSE, scrollX = TRUE, scrollY = "400px", bInfo = FALSE),
-        #selection = 'single'
-        selection = 'none'
+        #selection = 'single',
+        selection = list(target = 'row', mode = 'single')
+        #selection = 'none'
   )
+  
+  #Destaca aluno selecionado na tabela
+  proxy = dataTableProxy('tabalunos')
+  observe({
+    d <- event_data("plotly_hover")
+    if(!is.null(d)) {
+      linhaselec <- d$key
+    } else {
+      linhaselec <- 0
+    }
+    proxy %>% selectRows(c(linhaselec))
+  })
   
   #Gráfico
   output$grafico <- renderPlotly({
@@ -126,12 +150,20 @@ shinyServer(function(input, output) {
       colunas <- c("Nome.do.Aluno","DESEMPENHO_BINARIO", var)
       ncol <- match(colunas,names(selecaoalunos))
       alunos <- select(selecaoalunos, ncol)
+      
+      #@@-Associação com índice na tabela
+      alunos <- alunos[order(alunos["Nome.do.Aluno"]),]
+      alunos["t"] <- c(1:nrow(alunos))
+      #@@
+      
       alunos <- alunos[order(alunos[var]),]
       alunos["r"] <- c(1:nrow(alunos))
-      colnames(alunos) <- c("Nome", "Desempenho", "Variavel", "Rank")
+      colnames(alunos) <- c("Nome", "Desempenho", "Frequência", "PosTabela", "Rank")
       alunos$Desempenho[alunos$Desempenho == "0"] <- "Satisfatório"
       alunos$Desempenho[alunos$Desempenho == "1"] <- "Insatisfatório"
-      plot_ly(data = alunos, x = Rank, y = Variavel, mode = "markers", color = Variavel, text = paste(paste("Nome:", Nome), paste("Frequência:", Variavel), paste("Desempenho:", Desempenho), sep = "<br>"))
+      grafico <- plot_ly(data = alunos, x = Rank, y = Frequência, mode = "markers", color = Frequência, key = PosTabela, text = paste(paste("Nome:", Nome), paste("Frequência:", Frequência), paste("Desempenho:", Desempenho), sep = "<br>"))
+      grafico <- layout(title = linhatabToVar(input$tabvariaveis_rows_selected), dragmode = "select")
+      grafico
     }
   })
 })
