@@ -19,7 +19,20 @@ ui <- dashboardPage(
     #)
     uiOutput("UIselectcurso"),
     uiOutput("UIselectperiodo"),
-    uiOutput("UIselectdisciplina")
+    uiOutput("UIselectdisciplina"),
+    conditionalPanel( cond = "input.selectdisciplina == ''",
+                      fluidRow(
+                        column(width = 12, 
+                               uiOutput('text1'),
+                               tags$head(tags$style("#text1{color: red;
+                                 font-size: 14px;
+                                 padding-left: 1em;
+                                 }"
+                               )
+                               )
+                        )
+                      )
+    )
   ),
   
   dashboardBody(fluidRow(
@@ -44,9 +57,6 @@ ui <- dashboardPage(
         box(dataTableOutput("tabvariaveis"), title = "Variáveis:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = FALSE),
         box(dataTableOutput("tabalunos"), title = "Alunos:", footer = NULL, status = NULL, solidHeader = TRUE, background = NULL, width = NULL, height = NULL, collapsible = TRUE, collapsed = TRUE)
       )
-    ),
-    conditionalPanel( cond = "input.selectdisciplina == ''",
-      HTML("Selecione o curso, o período e a disciplina no menu à esquerda")
     )
   ))
 )

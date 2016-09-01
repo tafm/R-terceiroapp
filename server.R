@@ -55,6 +55,16 @@ shinyServer(function(input, output) {
     selectInput("selectdisciplina", "Disciplina:", opcoesdisciplina, selected = NULL)
   })
   
+  #Alerta de campos obrigatórios
+  output$text1 <- renderUI({
+    campos <- c()
+    if(is.null(input$selectcurso) || input$selectcurso == '') campos <- c(campos, "-Selecione o curso")
+    if(is.null(input$selectperiodo) || input$selectperiodo == '') campos <- c(campos, "-Selecione o período")
+    if(is.null(input$selectdisciplina) || input$selectdisciplina == '') campos <- c(campos, "-Selecione a disciplina")
+    campos <- HTML(paste(campos, collapse = "<br/>"))
+    campos
+  })
+  
   #Box de desempenho satisfatório
   output$UIboxsatisfatorio <- renderInfoBox({
     if(!is.null(input$selectcurso) && input$selectcurso != "" && !is.null(input$selectperiodo) && input$selectperiodo != "" && !is.null(input$selectdisciplina) && input$selectdisciplina != "") {
